@@ -11,9 +11,9 @@ According to the kubernetes documentation, a metric-server(need to deploy seprat
 
 2. Full Metrics Pipeline<
   Like Prometheus, tool for event monitoring and alerting when crash occurs, by checking memory checks continuously. In short, it monitors linux/window servers, apache server, single application, and services with units like cpu status, memory usage, requests counts etc.
-  
-  
-But there is not any tool which provision monitoring each and every process running inside a container. Here x-tracer comes into the picture, which traces every process log inside a pod and stream the logs to the x-tracer server in real time.
+
+
+Here we are introducing a tool by ITRI named x-tracer , which traces every process log inside a pod and stream the logs to the x-tracer server in real time.
 
 x-tracer includes 7 ebp tools(BCC),probes to trace the process events:
 
