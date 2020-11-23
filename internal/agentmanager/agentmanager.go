@@ -1,6 +1,7 @@
 package agentmanager
 
 import (
+//	"fmt"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -14,21 +15,18 @@ type agent struct {
 	targetContainerId string
 	targetNodeId      string
 	masterIp          string
-	clientSet         *kubernetes.Clientset
-	probes            string
+	clientSet *kubernetes.Clientset
 }
 
 var podObj *v1.Pod
 var svcObj *v1.Service
 
-var C chan bool
-
-func New(containerId string, nodeId string, masterIp string, clientSet *kubernetes.Clientset, probes string) *agent {
+func New(containerId string, nodeId string, masterIp string, clientSet *kubernetes.Clientset) *agent {
 	return &agent{
 		containerId,
 		nodeId,
 		masterIp,
-		clientSet, probes}
+		clientSet}
 }
 
 func (a *agent) getAgentService() *v1.Service {
@@ -59,7 +57,7 @@ func (a *agent) getAgentService() *v1.Service {
 func (a *agent) getAgentPodObject() *v1.Pod {
 	t := true
 	var user int64 = 0
-	//	net := "tcptracer,tcpconnect,tcpaccept,tcplife,execsnoop,biosnoop,cachetop"
+	net := "tcptracer,tcpconnect,tcpaccept,tcplife,execsnoop,biosnoop,cachetop"
 	//var pathType = v1.HostPathDirectory
 	return &v1.Pod{
 		TypeMeta: metav1.TypeMeta{
@@ -84,8 +82,8 @@ func (a *agent) getAgentPodObject() *v1.Pod {
 					Name:  "agent",
 					Image: "sheenam3/x-agent",
 					/*Command: []string{
-					"sleep",
-					"9900000" },*/
+						 "sleep",
+						 "9900000" },*/
 					Ports: []v1.ContainerPort{
 						{
 							Name:          "grpc",
@@ -105,7 +103,7 @@ func (a *agent) getAgentPodObject() *v1.Pod {
 						},
 						{
 							Name:  "tools",
-							Value: a.probes,
+							Value: net,
 						},
 						{
 							Name:  "masterIp",
@@ -115,7 +113,8 @@ func (a *agent) getAgentPodObject() *v1.Pod {
 					VolumeMounts: []v1.VolumeMount{
 						{
 							MountPath: "/proc",
-							Name:      "host-proc",
+							Name: "host-proc",
+
 						},
 						{
 							MountPath: "/lib/modules",
@@ -139,12 +138,13 @@ func (a *agent) getAgentPodObject() *v1.Pod {
 			Volumes: []v1.Volume{
 				{
 					Name: "host-proc",
-					VolumeSource: v1.VolumeSource{
+					VolumeSource:v1.VolumeSource{
 						HostPath: &v1.HostPathVolumeSource{
 							Path: "/proc",
 						},
 					},
 				},
+
 
 				{
 					Name: "kernel-modules",
@@ -183,7 +183,7 @@ func (a *agent) getAgentPodObject() *v1.Pod {
 	}
 }
 
-func (a *agent) ApplyAgentPod() {
+func (a *agent) ApplyAgentPod(){
 	agentPod := a.getAgentPodObject()
 	podObj, _ = a.clientSet.CoreV1().Pods(agentPod.Namespace).Create(agentPod)
 }
